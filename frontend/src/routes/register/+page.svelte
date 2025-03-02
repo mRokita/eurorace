@@ -1,18 +1,58 @@
 <script>
+	import { onMount } from 'svelte';
+
+	let username = '';
 	let email = '';
-	let password = '';
-	let confirmPassword = '';
+	let password1 = '';
+	let password2 = '';
 	let errorMessage = '';
+	let successMessage = '';
 
 	// Function to handle form submission
-	const handleSubmit = () => {
-		// Handle the registration logic here
-		if (password !== confirmPassword) {
+	const handleSubmit = async () => {
+		// Reset messages
+		errorMessage = '';
+		successMessage = '';
+
+		// Check if passwords match
+		if (password1 !== password2) {
 			errorMessage = 'Passwords do not match!';
 			return;
 		}
 
-		console.log('Registration details:', { email, password });
+		// Data to be sent to the backend
+		const registrationData = {
+			username,
+			email,
+			password1,
+			password2
+		};
+
+		try {
+			// Make POST request to the backend registration endpoint
+			const response = await fetch('/api/auth/registration', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(registrationData)
+			});
+
+			if (!response.ok) {
+				// If the server responds with an error
+				const errorData = await response.json();
+				errorMessage = errorData.message || 'Registration failed. Please try again.';
+				alert(errorMessage);
+			} else {
+				// If registration is successful
+				const data = await response.json();
+				successMessage = data.message || 'Registration successful! Please log in.';
+				alert(successMessage);
+			}
+		} catch (error) {
+			// Handle any network errors
+			errorMessage = 'Network error. Please try again later.';
+		}
 	};
 </script>
 
@@ -23,15 +63,10 @@
 			<h1>Register</h1>
 
 			<form on:submit|preventDefault={handleSubmit}>
-				<input type="username" placeholder="Username" required />
+				<input type="username" placeholder="Username" bind:value={username} required />
 				<input type="email" placeholder="Email" bind:value={email} required />
-				<input type="password" placeholder="Password" bind:value={password} required />
-				<input
-					type="password"
-					placeholder="Confirm Password"
-					bind:value={confirmPassword}
-					required
-				/>
+				<input type="password" placeholder="Password" bind:value={password1} required />
+				<input type="password" placeholder="Confirm Password" bind:value={password2} required />
 				<input type="submit" value="Register" />
 			</form>
 
@@ -52,5 +87,5 @@
 
 <!-- Import the registration CSS -->
 <style>
-	@import '../../assets/styles/registration.css';
+	@import '$assets/styles/registration.css';
 </style>
