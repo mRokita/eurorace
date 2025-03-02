@@ -30,7 +30,7 @@
 
 		try {
 			// Make POST request to the backend registration endpoint
-			const response = await fetch('/api/auth/registration', {
+			const response = await fetch('/api/auth/registration/', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
