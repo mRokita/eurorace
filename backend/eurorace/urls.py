@@ -14,20 +14,37 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
+from allauth.account.views import ConfirmEmailView, PasswordResetView
+from dj_rest_auth.registration.views import VerifyEmailView, ResendEmailVerificationView, RegisterView
+from dj_rest_auth.serializers import PasswordResetConfirmSerializer
 from django.contrib import admin
-from django.urls import path
-from django.urls.conf import include
+from django.shortcuts import redirect
+from django.urls import path, reverse
+from django.urls.conf import include, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("dj_rest_auth.urls")),
-    path("api/auth/registration", include("dj_rest_auth.registration.urls")),
+    path("api/auth/registration/", include("dj_rest_auth.registration.urls")),
+
+    path("api/auth/registration/", RegisterView.as_view(), name='rest_register'),
+    re_path(r"api/auth/registration/verify-email/?$", VerifyEmailView.as_view(), name="rest_verify_email"),
+    re_path(r"api/auth/registration/resend-email/?$", ResendEmailVerificationView.as_view(), name="rest_resend_email"),
+
+    re_path(
+        r"account-confirm-email/(?P<key>[-:\w]+)/$", lambda *args, **kwargs: redirect(reverse("swagger-ui")),
+        name="account_confirm_email",
+    ),
+    re_path(
+        r"password_reset_confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<key>.+)$", lambda *args, **kwargs: redirect(reverse("swagger-ui")),
+        name="password_reset_confirm",
+    ),
+
     # YOUR PATTERNS
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Optional UI:
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 
 ]
