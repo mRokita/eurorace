@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {onMount, onDestroy, getContext, setContext} from 'svelte';
+	import { onMount, onDestroy, getContext, setContext } from 'svelte';
 	import L from 'leaflet';
 
 	export let width: number;
@@ -9,14 +9,22 @@
 	let marker: L.Marker | undefined;
 	let markerElement: HTMLElement;
 
-	const {getMap}: { getMap: () => L.Map | undefined} = getContext('map');
+	const { getMap }: { getMap: () => L.Map | undefined } = getContext('map');
 	const map = getMap();
 
-	setContext('layer', {getLayer: () => marker});
+	setContext('layer', {
+		// L.Marker inherits from L.Layer
+		getLayer: () => marker
+	});
 
 	onMount(() => {
 		if (map) {
-			marker = L.marker(latLng).addTo(map);
+			let icon = L.divIcon({
+				html: markerElement,
+				className: 'map-marker',
+				iconSize: L.point(width, height)
+			});
+			marker = L.marker(latLng, { icon }).addTo(map);
 		}
 	});
 
