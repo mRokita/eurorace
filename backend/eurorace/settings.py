@@ -45,11 +45,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.gis",
     "allauth",
     "allauth.socialaccount",
     "allauth.account",
     "dj_rest_auth.registration",
     "eurorace",
+    "leaflet",
     "rest_framework",
     "rest_framework.authtoken",
     "drf_spectacular",
@@ -94,7 +96,7 @@ WSGI_APPLICATION = "eurorace.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
+        "ENGINE": "django.contrib.gis.db.backends.spatialite",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }

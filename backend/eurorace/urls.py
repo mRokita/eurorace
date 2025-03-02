@@ -22,6 +22,13 @@ from django.shortcuts import redirect
 from django.urls import path, reverse
 from django.urls.conf import include, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from rest_framework.routers import DefaultRouter
+
+from eurorace.views import LocationReportViewSet
+
+api_router = DefaultRouter()
+
+api_router.register("location-reports", LocationReportViewSet, basename="location-reports")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -46,5 +53,6 @@ urlpatterns = [
     # Optional UI:
     path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("api/", include(api_router.urls))
 
 ]
