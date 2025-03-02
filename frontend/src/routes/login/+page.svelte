@@ -2,6 +2,7 @@
 	let email = '';
 	let password = '';
 
+	// Function to handle form submission
 	const handleSubmit = () => {
 		// Handle the login logic here
 		console.log('Login details:', { email, password });
@@ -10,6 +11,7 @@
 
 <div class="side-container">
 	<div class="side-content">
+		<!-- Login Form -->
 		<div class="login-form">
 			<h1>Login</h1>
 
@@ -19,12 +21,16 @@
 				<input type="submit" value="Login" />
 			</form>
 
+			<!-- Forgot password link -->
 			<a href="#" class="forgot-password">Forgot Password?</a>
 		</div>
 	</div>
 	<div class="side-content">
-		<!-- Empty side to add background image -->
+		<!-- You can add an image or background here -->
 	</div>
 </div>
 
-<style src="./Login.css"></style>
+<!-- Import the login CSS -->
+<style>
+	@import '../../assets/styles/login.css';
+</style>

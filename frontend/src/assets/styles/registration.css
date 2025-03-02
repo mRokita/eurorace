@@ -1,4 +1,4 @@
-/* src/assets/styles/login.css */
+/* src/assets/styles/registration.css */
 
 /* Import colors if using external colors.css file */
 @import './colors.css';
@@ -18,8 +18,8 @@ h1 {
     color: var(--rodzynkowa-czern);
 }
 
-/* Login Form Styling */
-.login-form {
+/* Registration Form Styling */
+.registration-form {
     background-color: var(--baby-powder);
     padding: 40px;
     border-radius: 10px;
@@ -31,8 +31,11 @@ h1 {
 }
 
 /* Inputs and Submit Button */
+input[type="username"],
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+input[type="password"]:last-child {
+    /* For Confirm Password */
     width: 100%;
     padding: 15px;
     margin: 10px 0;
@@ -59,16 +62,27 @@ input[type="submit"]:hover {
     background-color: var(--ognista-roza);
 }
 
-/* Forgot Password Link */
-.forgot-password {
+/* Error message */
+.error-message {
+    color: var(--ognista-roza);
     font-size: 14px;
-    color: var(--niebieski-cg);
-    text-decoration: none;
     margin-top: 10px;
-    display: inline-block;
+    text-align: center;
 }
 
-.forgot-password:hover {
+/* Redirect to login */
+.registration-form p {
+    text-align: center;
+    font-size: 14px;
+    color: var(--rodzynkowa-czern);
+}
+
+.registration-form a {
+    color: var(--niebieski-cg);
+    text-decoration: none;
+}
+
+.registration-form a:hover {
     text-decoration: underline;
     color: var(--pudrowy-pomarancz);
 }
