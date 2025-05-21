@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import environ
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -53,9 +54,11 @@ INSTALLED_APPS = [
     "eurorace",
     "leaflet",
     "rest_framework",
+    "rest_framework_gis",
     "rest_framework.authtoken",
     "drf_spectacular",
-    "drf_spectacular_sidecar"
+    "drf_spectacular_sidecar",
+    "channels"
 ]
 
 
@@ -89,6 +92,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "eurorace.wsgi.application"
+ASGI_APPLICATION = "eurorace.asgi.application"
+
+# Channel layers for WebSocket support
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer" if not DEBUG else "channels.layers.InMemoryChannelLayer",
+        "CONFIG": {
+            "hosts": [env.str("REDIS_URL", default="redis://localhost:6379/0")],
+        } if not DEBUG else {},
+    },
+}
 
 
 # Database
@@ -96,8 +110,12 @@ WSGI_APPLICATION = "eurorace.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.spatialite",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": env.str("DB_NAME", default="eurorace"),
+        "USER": env.str("DB_USER", default="postgres"),
+        "PASSWORD": env.str("DB_PASSWORD", default="postgres"),
+        "HOST": env.str("DB_HOST", default="localhost"),
+        "PORT": env.str("DB_PORT", default="5432"),
     }
 }
 
@@ -168,10 +186,10 @@ SPECTACULAR_SETTINGS = {
 # EMAIL_HOST=mail.lab.mrokita.pl
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = env.str("EMAIL_HOST")
-EMAIL_PORT = env.int("EMAIL_PORT")
-EMAIL_HOST_USER = env.str("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = env.str("EMAIL_HOST_USER")
+EMAIL_HOST = env.str("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env.int("EMAIL_PORT", default=25)
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env.str("EMAIL_HOST_USER", default="webmaster@localhost")
 # EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
 EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
