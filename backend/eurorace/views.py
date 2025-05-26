@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from eurorace.models import LocationReport, Factory
-from eurorace.serializers import LocationReportSerializer, FactorySerializer
+from eurorace.models import LocationReport
+from eurorace.serializers import LocationReportSerializer
 
 
 class LocationReportViewSet(viewsets.ModelViewSet):
@@ -16,8 +16,3 @@ class LocationReportViewSet(viewsets.ModelViewSet):
     @action(detail=False)
     def latest(self, request):
         return Response(LocationReportSerializer(instance=LocationReport.objects.latest_for_users(), many=True).data)
-
-
-class FactoryViewSet(viewsets.ModelViewSet):
-    queryset = Factory.objects.all()
-    serializer_class = FactorySerializer

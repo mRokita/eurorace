@@ -34,7 +34,7 @@ SECRET_KEY = "django-insecure-gcapc1tbt#tir^sqbun!&5+bekf@q%mt^=vn1$bl^e=bny3%0l
 
 DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition

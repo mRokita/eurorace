@@ -24,12 +24,11 @@ from django.urls.conf import include, re_path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 
-from eurorace.views import LocationReportViewSet, FactoryViewSet
+from eurorace.views import LocationReportViewSet
 
 api_router = DefaultRouter()
 
 api_router.register("location-reports", LocationReportViewSet, basename="location-reports")
-api_router.register("factories", FactoryViewSet, basename="factories")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

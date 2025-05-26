@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   backend:
@@ -10,63 +9,66 @@ services:
     volumes:
       - .:/app
       - static_volume:/app/static
-    environment:
-      - DEBUG=True
-      - EMAIL_HOST=mail.lab.mrokita.pl
-      - EMAIL_PORT=465
-      - EMAIL_HOST_USER=eurorace@lab.mrokita.pl
-      - EMAIL_HOST_PASSWORD=your_password_here
-      - EMAIL_USE_SSL=True
-      - DB_NAME=eurorace
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
-    restart: unless-stopped
+    env_file:
+      - .env
+    restart: on-failure
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              daphne -b 0.0.0.0 -p 8000 eurorace.asgi:application"
 
   test:
+    platform: linux/x86_64
     build:
       context: .
       dockerfile: Dockerfile.test
     volumes:
       - .:/app
     environment:
-      - DEBUG=True
-      - DB_NAME=eurorace_test
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/1
+      - DEBUG=${TEST_DEBUG}
+      - DB_NAME=${TEST_DB_NAME}
+      - DB_USER=${TEST_DB_USER}
+      - DB_PASSWORD=${TEST_DB_PASSWORD}
+      - DB_HOST=${TEST_DB_HOST}
+      - DB_PORT=${TEST_DB_PORT}
+      - REDIS_URL=${TEST_REDIS_URL}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   db:
-    image: postgis/postgis:15-3.4
+    platform: linux/amd64
+    image: postgis/postgis:15-3.3
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=eurorace
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - .env
     ports:
       - "5432:5432"
-    restart: unless-stopped
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   static_volume:

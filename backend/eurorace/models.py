@@ -1,20 +1,8 @@
-from uuid import uuid4
-
-from django.db.models import Subquery, Max, Q, F, OuterRef
+from django.db.models import Subquery, OuterRef
 from django.utils.translation import gettext_lazy as _
 from django.contrib.gis.db import models as gis_models
 from django.db import models
 from rest_framework.authtoken.admin import User
-
-
-
-class Factory(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    name = models.TextField()
-    geofence = gis_models.PolygonField()
-
-    class Meta:
-        db_table = "factories"
 
 class LocationManager(models.Manager):
     def latest_for_users(self):
@@ -41,5 +29,5 @@ class LocationReport(models.Model):
         return _("Location of {} at {} {}").format(
             str(self.user.username),
             self.timestamp,
-            (self.location[0], self.location[1])
+            (self.location.x, self.location.y)
         )

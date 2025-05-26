@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-bullseye
 
 WORKDIR /app
 
@@ -13,8 +13,14 @@ RUN apt-get update && apt-get install -y \
 # Copy project files
 COPY . /app/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -e .
+# Install Python dependencies with retry mechanism
+RUN pip config set global.index-url https://pypi.org/simple/ && \
+    pip config set global.trusted-host pypi.org && \
+    for i in $(seq 1 3); do \
+        pip install --no-cache-dir --timeout 300 --retries 5 -e . && break || \
+        echo "Retry $i of 3..." && \
+        sleep 5; \
+    done
 
 # Run tests
 CMD ["python", "manage.py", "test", "eurorace.tests"]

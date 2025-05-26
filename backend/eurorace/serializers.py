@@ -1,7 +1,7 @@
 from drf_extra_fields.geo_fields import PointField
 from rest_framework import serializers
 
-from eurorace.models import LocationReport, Factory
+from eurorace.models import LocationReport
 
 
 class LocationReportSerializer(serializers.ModelSerializer):
@@ -9,9 +9,3 @@ class LocationReportSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ("location", "timestamp", "user")
         model = LocationReport
-
-
-class FactorySerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ("id", "name", "description")
-        model = Factory

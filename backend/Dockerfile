@@ -19,13 +19,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Set work directory
 WORKDIR /app
 
-# Install Python dependencies
-COPY pyproject.toml .
-RUN pip install --upgrade pip && \
-    pip install -e .
-
-# Copy project
+# Copy project first
 COPY . .
+
+# Install Python dependencies with retry mechanism
+RUN pip config set global.index-url https://pypi.org/simple/ && \
+    pip config set global.trusted-host pypi.org && \
+    for i in $(seq 1 3); do \
+        pip install --no-cache-dir --timeout 300 --retries 5 -e . && break || \
+        echo "Retry $i of 3..." && \
+        sleep 5; \
+    done
 
 # Create directory for static files
 RUN mkdir -p /app/static
