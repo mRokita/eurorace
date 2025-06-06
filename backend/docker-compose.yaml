@@ -1,6 +1,7 @@
 
 services:
   backend:
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,7 +24,7 @@ services:
              daphne -b 0.0.0.0 -p 8000 eurorace.asgi:application"
 
   test:
-    platform: linux/x86_64
+    platform: ${TEST_DOCKER_PLATFORM:-linux/x86_64}
     build:
       context: .
       dockerfile: Dockerfile.test
@@ -44,10 +45,12 @@ services:
         condition: service_healthy
 
   db:
-    platform: linux/amd64
-    image: postgis/postgis:15-3.3
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./init-postgis.sql:/docker-entrypoint-initdb.d/init-postgis.sql
+      - ./refresh-collation.sh:/usr/local/bin/refresh-collation.sh
     env_file:
       - .env
     ports:
@@ -58,9 +61,31 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    command: |
+      bash -c "
+        # Install PostGIS dependencies
+        apt-get update && apt-get install -y --no-install-recommends postgresql-15-postgis-3 postgresql-15-postgis-3-scripts && rm -rf /var/lib/apt/lists/*
+
+        # Start PostgreSQL
+        docker-entrypoint.sh postgres &
+
+        # Wait for PostgreSQL to start
+        until pg_isready -U postgres; do
+          echo 'Waiting for PostgreSQL to start...'
+          sleep 2
+        done
+
+        # Make the refresh script executable and run it
+        chmod +x /usr/local/bin/refresh-collation.sh
+        /usr/local/bin/refresh-collation.sh
+
+        # Keep container running
+        wait
+      "
 
   redis:
-    image: redis:7-alpine
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    image: redis:7
     ports:
       - "6379:6379"
     restart: unless-stopped
