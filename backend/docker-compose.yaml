@@ -1,7 +1,5 @@
-
 services:
   backend:
-    platform: ${DOCKER_PLATFORM:-linux/arm64}
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,38 +17,16 @@ services:
       redis:
         condition: service_healthy
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              daphne -b 0.0.0.0 -p 8000 eurorace.asgi:application"
 
-  test:
-    platform: ${TEST_DOCKER_PLATFORM:-linux/x86_64}
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    volumes:
-      - .:/app
-    environment:
-      - DEBUG=${TEST_DEBUG}
-      - DB_NAME=${TEST_DB_NAME}
-      - DB_USER=${TEST_DB_USER}
-      - DB_PASSWORD=${TEST_DB_PASSWORD}
-      - DB_HOST=${TEST_DB_HOST}
-      - DB_PORT=${TEST_DB_PORT}
-      - REDIS_URL=${TEST_REDIS_URL}
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
   db:
-    platform: ${DOCKER_PLATFORM:-linux/arm64}
-    image: postgres:15
+    image: postgis/postgis:15-3.3
     volumes:
       - postgres_data:/var/lib/postgresql/data/
       - ./init-postgis.sql:/docker-entrypoint-initdb.d/init-postgis.sql
-      - ./refresh-collation.sh:/usr/local/bin/refresh-collation.sh
     env_file:
       - .env
     ports:
@@ -61,34 +37,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    command: |
-      bash -c "
-        # Install PostGIS dependencies
-        apt-get update && apt-get install -y --no-install-recommends postgresql-15-postgis-3 postgresql-15-postgis-3-scripts && rm -rf /var/lib/apt/lists/*
-
-        # Start PostgreSQL
-        docker-entrypoint.sh postgres &
-
-        # Wait for PostgreSQL to start
-        until pg_isready -U postgres; do
-          echo 'Waiting for PostgreSQL to start...'
-          sleep 2
-        done
-
-        # Make the refresh script executable and run it
-        chmod +x /usr/local/bin/refresh-collation.sh
-        /usr/local/bin/refresh-collation.sh
-
-        # Keep container running
-        wait
-      "
 
   redis:
-    platform: ${DOCKER_PLATFORM:-linux/arm64}
     image: redis:7
     ports:
       - "6379:6379"
     restart: unless-stopped
+    command: redis-server
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

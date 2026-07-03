@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.gis.db import models as gis_models
 from django.db import models
 from rest_framework.authtoken.admin import User
+from eurorace.task_models import Task, TaskPhoto
 
 class LocationManager(models.Manager):
     def latest_for_users(self):

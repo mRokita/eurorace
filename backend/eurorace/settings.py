@@ -40,16 +40,19 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "corsheaders",  # Dodano obsługę CORS
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "django.contrib.gis",
     "allauth",
     "allauth.socialaccount",
     "allauth.account",
+    "dj_rest_auth",
     "dj_rest_auth.registration",
     "eurorace",
     "leaflet",
@@ -63,6 +66,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # Dodano obsługę CORS
     "allauth.account.middleware.AccountMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -157,6 +161,11 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
 
+# Konfiguracja mediów (przesyłane pliki, np. zdjęcia)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR.parent / 'media'  # Folder mediów na poziomie wyżej niż aplikacja
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -167,26 +176,38 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
 }
 
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'Eurorace API',
-    'DESCRIPTION': '',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'REDOC_DIST': 'SIDECAR',
+# dj-rest-auth settings
+REST_AUTH = {
+    'USE_JWT': False,
+    'SESSION_LOGIN': False,
+    'REGISTER_SERIALIZER': 'dj_rest_auth.registration.serializers.RegisterSerializer',
 }
 
-# load into env
-# EMAIL_PORT=465
-# EMAIL_HOST_PASSWORD=Goldfish-Connector-Majority
-# EMAIL_HOST_USER=eurorace@lab.mrokita.pl
-# EMAIL_USE_SSL=true
-# EMAIL_HOST=mail.lab.mrokita.pl
+# allauth settings
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'username'
+ACCOUNT_USERNAME_REQUIRED = True
+SITE_ID = 1
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# Ustawienia hasła
+ACCOUNT_PASSWORD_MIN_LENGTH = 8
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+
+
+# Email settings
+# Zmiana z SMTP na backend konsolowy - emaile będą wyświetlane w konsoli, a nie wysyłane
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Poniższe ustawienia nie są potrzebne dla backendu konsolowego, ale zostawiamy je dla przyszłej konfiguracji
 EMAIL_HOST = env.str("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env.int("EMAIL_PORT", default=25)
 EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
@@ -194,3 +215,6 @@ EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = env.str("EMAIL_HOST_USER", default="webmaster@localhost")
 # EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
 EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
+
+# Konfiguracja CORS
+CORS_ALLOW_ALL_ORIGINS = True
